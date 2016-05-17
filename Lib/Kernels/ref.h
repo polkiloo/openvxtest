@@ -132,12 +132,14 @@ vx_status ref_Threshold(const vx_image src_image, vx_image dst_image, const vx_t
     Parameters (пример):
         src_image           - входное изображение;
         dst_image           - выходное изображение;
+        тип входного изображения  - VX_DF_IMAGE_RGB;
+        тип изображения маркеров  - VX_DF_IMAGE_S32;
 
     Return:
         VX_SUCCESS          - в случае успешного завершения;
-        VX_ERROR_INVALID_PARAMETERS - в случае некорректных данных.       
+        VX_ERROR_INVALID_PARAMETERS - в случае некорректных данных.
 */
-// ref_WatershedSegmentation
+vx_status ref_WatershedSegmentation(const vx_image src_image, vx_image dst_image);
 
 /*
     Function: ref_GrabCutSegmentation
