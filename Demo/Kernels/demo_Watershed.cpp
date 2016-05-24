@@ -37,6 +37,7 @@ namespace
 ///////////////////////////////////////////////////////////////////////////////
 void demo_Watershed::execute()
 {
+   cv::destroyAllWindows();
    cv::namedWindow(m_originalWindow, CV_WINDOW_NORMAL);
    cv::namedWindow(m_openVXWindow, CV_WINDOW_NORMAL);
    cv::namedWindow(m_openCVWindow, CV_WINDOW_NORMAL);

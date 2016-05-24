@@ -24,7 +24,8 @@
   <ItemGroup>
     <ClCompile Include="Kernels\ref\ref_Threshold.c" />
     <ClCompile Include="Kernels\ref\ref_WatershedSegmentation.c">
-      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</TreatWarningAsError>
+      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</TreatWarningAsError>
+      <InlineFunctionExpansion Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Disabled</InlineFunctionExpansion>
     </ClCompile>
   </ItemGroup>
   <PropertyGroup Label="Globals">

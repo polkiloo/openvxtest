@@ -6,6 +6,7 @@ Date: 27 April 2016
 */
 #include "../ref.h"
 #include <assert.h>
+#define ABS(a)  ( (a)>=0 ? (a) : -(a) )
 // Labels for pixels
 const vx_int8 IN_QUEUE = -2; // Pixel visited
 const vx_int8 WSHED = -1;    // Pixel belongs to watershed
@@ -26,7 +27,7 @@ typedef struct VxWSQueue
 }
 VxWSQueue;
 static vx_uint32   allocVxWSNodes(VxWSNode** storage, vx_uint32* size);
-bool               checkImagesParametrs(const vx_image* src_image, const vx_image* markers);
+static bool        checkImagesParametrs(const vx_image* src_image, const vx_image* markers);
 //Watershed segmentation
 vx_status          ref_WatershedSegmentation(const vx_image src_image, vx_image markers)
 {
@@ -36,9 +37,8 @@ vx_status          ref_WatershedSegmentation(const vx_image src_image, vx_image 
       return VX_ERROR_INVALID_PARAMETERS;
    }
    //size image
-   vx_uint32 src_width = src_image->width;
-   vx_uint32 src_height = src_image->height;
-   vx_uint32 dst_width = markers->width;
+   vx_uint32 img_width = src_image->width;
+   vx_uint32 img_height = src_image->height;
    // storage size
    vx_uint32 storageSize = 0;
    //array of every created node
@@ -60,11 +60,11 @@ vx_status          ref_WatershedSegmentation(const vx_image src_image, vx_image 
    // Current pixel in input image
    const vx_uint8* img = (vx_uint8*)(src_image->data);
    // Step size to next row in input image
-   vx_int32 istep = (vx_int32)(dst_width * 3);
+   vx_int32 istep = (vx_int32)(img_width * 3);
    // Current pixel in mask image
    vx_int32* mask = (vx_int32*)(markers->data);
    // Step size to next row in mask image
-   vx_int32 mstep = (vx_int32)(dst_width);
+   vx_int32 mstep = (vx_int32)(img_width);
    /////////////////#INLINE FUNCTION///////////////////////////////////////
 #define ws_max(a,b) ((b) + subs_tab[(a)-(b)+NQ])
 #define ws_min(a,b) ((a) - subs_tab[(a)-(b)+NQ])
@@ -80,9 +80,9 @@ vx_status          ref_WatershedSegmentation(const vx_image src_image, vx_image 
    storage[node].img_ofs = iofs;                        \
    if (q[idx].last)                                     \
    storage[q[idx].last].next = node;                    \
-   else                                            \
-   q[idx].first = node;                            \
-   q[idx].last = node;                             \
+   else                                                 \
+   q[idx].first = node;                                 \
+   q[idx].last = node;                                  \
    }
    // Get next node from queue idx
 #define ws_pop(idx,mofs,iofs)                           \
@@ -99,23 +99,23 @@ vx_status          ref_WatershedSegmentation(const vx_image src_image, vx_image 
    // Get highest absolute channel difference in diff
 #define c_diff(ptr1,ptr2,diff)                          \
    {                                                    \
-   dr = (vx_uint8)abs((ptr1)[0] - (ptr2)[0]);           \
-   dg = (vx_uint8)abs((ptr1)[1] - (ptr2)[1]);           \
-   db = (vx_uint8)abs((ptr1)[2] - (ptr2)[2]);           \
+   dr = ABS((ptr1)[0] - (ptr2)[0]);                     \
+   dg = ABS((ptr1)[1] - (ptr2)[1]);                     \
+   db = ABS((ptr1)[2] - (ptr2)[2]);                     \
    diff = ws_max(db, dg);                               \
    diff = ws_max(diff, dr);                             \
    }
    ////////////////////////////////////////////////////////////////////////
    // draw a pixel-wide border of dummy "watershed" (i.e. boundary) pixels
-   for (j = 0; j < src_width; j++)
-      mask[j] = mask[j + mstep*(src_height - 1)] = WSHED;
+   for (j = 0; j < img_width; j++)
+      mask[j] = mask[j + mstep*(img_height - 1)] = WSHED;
    // initial phase: put all the neighbor pixels of each marker to the ordered queue -
    // determine the initial boundaries of the basins
-   for (i = 1; i < src_height - 1; i++)
+   for (i = 1; i < img_height - 1; i++)
    {
       img += istep; mask += mstep;
-      mask[0] = mask[src_width - 1] = WSHED; //boundary pixels
-      for (j = 1; j <src_width - 1; j++)
+      mask[0] = mask[img_width - 1] = WSHED; //boundary pixels
+      for (j = 1; j <img_width - 1; j++)
       {
          vx_int32* m = mask + j;
          if (m[0] < 0) m[0] = 0;
@@ -244,9 +244,8 @@ vx_status          ref_WatershedSegmentation(const vx_image src_image, vx_image 
 //Allocate nodes in storage of VxWSNode
 static vx_uint32   allocVxWSNodes(VxWSNode** storage, vx_uint32* size)
 {
-#define MAX(a,b)  ((a) < (b) ? (b) : (a))
    vx_uint32 sz = *size;
-   vx_uint32 newsz = MAX(128, sz * 3 / 2);
+   vx_uint32 newsz = 128 < (sz * 3 / 2) ? (sz * 3 / 2) : 128;
    *storage = (VxWSNode*)realloc(*storage, (newsz)*sizeof(VxWSNode));
    *size = newsz;
    if (sz == 0)
@@ -262,7 +261,7 @@ static vx_uint32   allocVxWSNodes(VxWSNode** storage, vx_uint32* size)
    return sz;
 }
 //Check input images format
-bool               checkImagesParametrs(const vx_image* src_image, const vx_image* markers)
+static bool        checkImagesParametrs(const vx_image* src_image, const vx_image* markers)
 {
    return (((*src_image)->image_type != VX_DF_IMAGE_RGB) || ((*markers)->image_type != VX_DF_IMAGE_S32) ||
       ((*src_image)->width != (*markers)->height) || ((*src_image)->width != (*markers)->width));
