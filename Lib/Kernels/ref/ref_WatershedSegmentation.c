@@ -10,7 +10,8 @@ Date: 27 April 2016
 // Labels for pixels
 const vx_int8 IN_QUEUE = -2; // Pixel visited
 const vx_int8 WSHED = -1;    // Pixel belongs to watershed
-const vx_uint16 NQ = 256;    // possible bit values = 2^8
+const vx_uint16 NQ = 256; // possible bit values = 2^8
+const vx_uint8 NCH = 3; // number of channels of the input image
 //Vx Watershed Nodes
 typedef struct VxWSNode
 {
@@ -60,7 +61,7 @@ vx_status          ref_WatershedSegmentation(const vx_image src_image, vx_image 
    // Current pixel in input image
    const vx_uint8* img = (vx_uint8*)(src_image->data);
    // Step size to next row in input image
-   vx_int32 istep = (vx_int32)(img_width * 3);
+   vx_int32 istep = (vx_int32)(img_width * NCH);
    // Current pixel in mask image
    vx_int32* mask = (vx_int32*)(markers->data);
    // Step size to next row in mask image
@@ -122,13 +123,13 @@ vx_status          ref_WatershedSegmentation(const vx_image src_image, vx_image 
          if (m[0] == 0 && (m[-1] > 0 || m[1] > 0 || m[-mstep] > 0 || m[mstep] > 0))
          {
             // Find smallest difference to adjacent markers
-            const vx_uint8* ptr = img + j * 3;
+            const vx_uint8* ptr = img + j * NCH;
             vx_uint32 idx = 256, t;
             if (m[-1] > 0)
-               c_diff(ptr, ptr - 3, idx);
+               c_diff(ptr, ptr - NCH, idx);
             if (m[1] > 0)
             {
-               c_diff(ptr, ptr + 3, t);
+               c_diff(ptr, ptr + NCH, t);
                idx = ws_min(idx, t);
             }
             if (m[-mstep] > 0)
@@ -143,7 +144,7 @@ vx_status          ref_WatershedSegmentation(const vx_image src_image, vx_image 
             }
             // Add to according queue
             assert(0 <= idx && idx <= 255);
-            ws_push(idx, i*mstep + j, i*istep + j * 3);
+            ws_push(idx, i*mstep + j, i*istep + j * NCH);
             m[0] = IN_QUEUE;
          }
       }
@@ -210,15 +211,15 @@ vx_status          ref_WatershedSegmentation(const vx_image src_image, vx_image 
       // Add adjacent, unlabeled pixels to corresponding queue
       if (m[-1] == 0)
       {
-         c_diff(ptr, ptr - 3, t);
-         ws_push(t, mofs - 1, iofs - 3);
+         c_diff(ptr, ptr - NCH, t);
+         ws_push(t, mofs - 1, iofs - NCH);
          active_queue = ws_min(active_queue, t);
          m[-1] = IN_QUEUE;
       }
       if (m[1] == 0)
       {
-         c_diff(ptr, ptr + 3, t);
-         ws_push(t, mofs + 1, iofs + 3);
+         c_diff(ptr, ptr + NCH, t);
+         ws_push(t, mofs + 1, iofs + NCH);
          active_queue = ws_min(active_queue, t);
          m[1] = IN_QUEUE;
       }
