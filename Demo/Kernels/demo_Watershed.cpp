@@ -23,7 +23,7 @@ private:
    ///@brief provide interactive demo
    static void applyParameters(void* data);
 private:
-   ///@ source image
+   ///@source image
    cv::Mat m_srcImage;
 };
 ///////////////////////////////////////////////////////////////////////////////
@@ -84,7 +84,6 @@ void demo_Watershed::applyParameters(void* data)
    circle(markers1, cv::Point(5, 5), 3, CV_RGB(255, 255, 255), -1);
    // Perform the watershed algorithm
    cv::Mat markersfromCVwatershed = cv::Mat(markers1.size(), markers1.type(), markers1.data);
-
    //var for count time work cv::watershed
    clock_t t1;
    // time before working cv::watershed
@@ -129,7 +128,6 @@ void demo_Watershed::applyParameters(void* data)
    demo->m_srcImage.convertTo(srcImageForVX, CV_8UC3);
    cv::cvtColor(srcImageForVX, srcImageForVX, CV_BGR2RGB);
    markers2.convertTo(maskImageForVX, CV_32S);
-
    _vx_image srcVXImage = {
       srcImageForVX.data,
       imgSize.width,

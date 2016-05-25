@@ -32,7 +32,7 @@ static bool        checkImagesParametrs(const vx_image* src_image, const vx_imag
 vx_status          ref_WatershedSegmentation(const vx_image src_image, vx_image markers)
 {
    //check images param  and continue  if it`s valid
-   if (!checkImagesParametrs(&src_image, &markers))
+   if (checkImagesParametrs(&src_image, &markers))
    {
       return VX_ERROR_INVALID_PARAMETERS;
    }
@@ -245,7 +245,7 @@ vx_status          ref_WatershedSegmentation(const vx_image src_image, vx_image 
 static vx_uint32   allocVxWSNodes(VxWSNode** storage, vx_uint32* size)
 {
    vx_uint32 sz = *size;
-   vx_uint32 newsz = 128 < (sz * 3 / 2) ? (sz * 3 / 2) : 128;
+   vx_uint32 newsz = (128 < (sz * 3 / 2) ? (sz * 3 / 2) : 128);
    *storage = (VxWSNode*)realloc(*storage, (newsz)*sizeof(VxWSNode));
    *size = newsz;
    if (sz == 0)
@@ -263,6 +263,10 @@ static vx_uint32   allocVxWSNodes(VxWSNode** storage, vx_uint32* size)
 //Check input images format
 static bool        checkImagesParametrs(const vx_image* src_image, const vx_image* markers)
 {
-   return (((*src_image)->image_type != VX_DF_IMAGE_RGB) || ((*markers)->image_type != VX_DF_IMAGE_S32) ||
-      ((*src_image)->width != (*markers)->height) || ((*src_image)->width != (*markers)->width));
+   return (
+                ((*src_image)->image_type != VX_DF_IMAGE_RGB) 
+             || ((*markers)->image_type   != VX_DF_IMAGE_S32) 
+             || ((*src_image)->height     != (*markers)->height) 
+             || ((*src_image)->width      != (*markers)->width)
+          );
 }
